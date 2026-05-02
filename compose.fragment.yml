@@ -1,0 +1,15 @@
+# Compose fragment for the neo4j service.
+# Included by the gateway's docker-compose.generated.yml when this service is
+# enabled in config/services.yml. Bind container port to 127.0.0.1 only —
+# Caddy on the host (in --network host mode) will reverse-proxy.
+
+services:
+  neo4j:
+    image: TODO/replace-with-real-image
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7474:7474"
+    # environment:
+    #   FOO: ${neo4j_FOO}
+    # volumes:
+    #   - ./services/neo4j/data:/data

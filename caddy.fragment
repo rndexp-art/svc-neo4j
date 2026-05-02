@@ -1,0 +1,9 @@
+# Caddy snippet for the neo4j service.
+# Use the production hostname `neo4j.rndexp.art` — `rndexp render --env local`
+# rewrites it to `neo4j.rndexp.localhost` so dev gets HTTPS via Caddy's
+# internal CA and *.localhost auto-resolution.
+
+neo4j.rndexp.art {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:7474
+}
