@@ -6,8 +6,10 @@
 # /browser is a deep-link shortcut: it 302s to the Neo4j Browser SPA with
 # `dbms=` pre-filled, so the user lands directly on a connected session.
 # The :7473 site exposes the same backend over a non-default HTTPS port so
-# the browser can reach the Neo4j HTTPS API for the bolt-over-websocket
-# negotiation that Neo4j Browser performs.
+# Neo4j Browser can negotiate bolt-over-websocket against it.
+#
+# The reverse_proxy targets use the docker compose service name `neo4j`
+# (resolved via the project's default network).
 
 neo4j.rndexp.art {
 	encode zstd gzip
@@ -16,10 +18,10 @@ neo4j.rndexp.art {
 		not query dbms=*
 	}
 	redir @browser_entry /browser/?dbms=https://neo4j@neo4j.rndexp.art:7473&db=neo4j 302
-	reverse_proxy 127.0.0.1:7474
+	reverse_proxy neo4j:7474
 }
 
 https://neo4j.rndexp.art:7473 {
 	encode zstd gzip
-	reverse_proxy 127.0.0.1:7474
+	reverse_proxy neo4j:7474
 }
