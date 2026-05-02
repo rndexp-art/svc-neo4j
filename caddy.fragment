@@ -1,9 +1,25 @@
-# Caddy snippet for the neo4j service.
-# Use the production hostname `neo4j.rndexp.art` — `rndexp render --env local`
-# rewrites it to `neo4j.rndexp.localhost` so dev gets HTTPS via Caddy's
-# internal CA and *.localhost auto-resolution.
+# neo4j Caddy site blocks. Hostnames use the production form
+# `neo4j.rndexp.art` — the gateway's renderer rewrites them to
+# `neo4j.rndexp.localhost` for local dev. Caddy issues an internal cert for
+# *.rndexp.localhost on first request.
+#
+# /browser is a deep-link shortcut: it 302s to the Neo4j Browser SPA with
+# `dbms=` pre-filled, so the user lands directly on a connected session.
+# The :7473 site exposes the same backend over a non-default HTTPS port so
+# the browser can reach the Neo4j HTTPS API for the bolt-over-websocket
+# negotiation that Neo4j Browser performs.
 
 neo4j.rndexp.art {
+	encode zstd gzip
+	@browser_entry {
+		path /browser /browser/
+		not query dbms=*
+	}
+	redir @browser_entry /browser/?dbms=https://neo4j@neo4j.rndexp.art:7473&db=neo4j 302
+	reverse_proxy 127.0.0.1:7474
+}
+
+https://neo4j.rndexp.art:7473 {
 	encode zstd gzip
 	reverse_proxy 127.0.0.1:7474
 }

@@ -1,15 +1,28 @@
-# Compose fragment for the neo4j service.
-# Included by the gateway's docker-compose.generated.yml when this service is
-# enabled in config/services.yml. Bind container port to 127.0.0.1 only —
-# Caddy on the host (in --network host mode) will reverse-proxy.
+# neo4j compose fragment — included by the gateway when `neo4j` is enabled in
+# config/services.yml. Caddy (host network) reverse-proxies 127.0.0.1:7474.
+#
+# Persists data + logs in named docker volumes (NOT bind mounts) so prod data
+# survives `docker compose up -d --remove-orphans` and similar.
 
 services:
   neo4j:
-    image: TODO/replace-with-real-image
+    image: neo4j:trixie
     restart: unless-stopped
     ports:
-      - "127.0.0.1:7474:7474"
-    # environment:
-    #   FOO: ${neo4j_FOO}
-    # volumes:
-    #   - ./services/neo4j/data:/data
+      - "127.0.0.1:7474:7474"  # HTTP (neo4j browser)
+      - "127.0.0.1:7687:7687"  # Bolt
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "cypher-shell -u $${NEO4J_USER} -p $${NEO4J_PASSWORD} 'RETURN 1;' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  neo4j_data:
+  neo4j_logs:
