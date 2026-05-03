@@ -17,7 +17,7 @@ The gateway's `.env` (or `/opt/rndexpart/.env` in prod, written by GH Actions fr
 - `NEO4J_USER`
 - `NEO4J_PASSWORD`
 
-Compose interpolates `${NEO4J_USER}` / `${NEO4J_PASSWORD}` from there. The `$$` in the healthcheck is a literal `$` after compose interpolation — do not "fix" it.
+Compose interpolates `${NEO4J_USER}` / `${NEO4J_PASSWORD}` from there. The `$$` in the healthcheck is a literal `$` after compose interpolation — do not "fix" it; the healthcheck splits `NEO4J_AUTH` at runtime via shell parameter expansion (`${NEO4J_AUTH%%/*}` / `${NEO4J_AUTH#*/}`). We can't pass `NEO4J_USER`/`NEO4J_PASSWORD` directly into the container because the neo4j image interprets every `NEO4J_*` env var as a config setting and refuses to start under strict validation.
 
 ## How deploys work
 1. Push to `main` for development; merge to `production` to deploy.

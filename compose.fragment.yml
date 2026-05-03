@@ -18,7 +18,11 @@ services:
       - neo4j_data:/data
       - neo4j_logs:/logs
     healthcheck:
-      test: ["CMD-SHELL", "cypher-shell -u $${NEO4J_USER} -p $${NEO4J_PASSWORD} 'RETURN 1;' || exit 1"]
+      # NEO4J_AUTH is `user/password`; split it inside the container shell.
+      # Any NEO4J_* env beyond NEO4J_AUTH would be interpreted as a neo4j config
+      # setting and refuse to start (strict_validation), so we can't just pass
+      # NEO4J_USER/NEO4J_PASSWORD through.
+      test: ["CMD-SHELL", "cypher-shell -u \"$${NEO4J_AUTH%%/*}\" -p \"$${NEO4J_AUTH#*/}\" 'RETURN 1;' || exit 1"]
       interval: 10s
       timeout: 10s
       retries: 12
